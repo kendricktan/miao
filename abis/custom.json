@@ -1,0 +1,7 @@
+[
+  {
+    "inputs": [{ "name": "arg0", "type": "address" }],
+    "name": "setGovernance",
+    "type": "function"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "name": "miao",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:kendricktan/miao.git",
+  "author": "Kendrick Tan <kendricktan0814@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "abi-decoder": "^2.3.0",
+    "body-parser": "^1.19.0",
+    "ethers": "^5.0.19",
+    "express": "^4.17.1",
+    "express-slash": "^2.0.1",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.13.0",
+    "nodemon": "^2.0.6"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  }
+}
