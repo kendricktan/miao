@@ -1,14 +1,18 @@
 const fetch = require("node-fetch");
 
 const isUnknownSignature = (abiDecoder, trace) => {
-  if (trace.tag === "TxCall") {
-    const data = trace.callSigBytes + trace.callData.slice(2);
-    return !abiDecoder.decodeMethod(data);
-  }
+  try {
+    if (trace.tag === "TxCall") {
+      const data = trace.callSigBytes + trace.callData.slice(2);
+      return !abiDecoder.decodeMethod(data);
+    }
 
-  if (trace.tag === "TxDelegateCall") {
-    const data = trace.delegateCallSigBytes + trace.delegateCallData.slice(2);
-    return !abiDecoder.decodeMethod(data);
+    if (trace.tag === "TxDelegateCall") {
+      const data = trace.delegateCallSigBytes + trace.delegateCallData.slice(2);
+      return !abiDecoder.decodeMethod(data);
+    }
+  } catch (e) {
+    return true;
   }
 
   // Otherwise is not a function signature
@@ -55,6 +59,18 @@ const getUnknownSigBytesFromTraces = (abiDecoder, traces) => {
         return x.callSigBytes;
       }
       return x.delegateCallSigBytes;
+    });
+};
+
+const getUnknownAddressesFromTraces = (abiDecoder, traces) => {
+  // Flatten traces
+  return flattenTraces(traces)
+    .filter((x) => isUnknownSignature(abiDecoder, x))
+    .map((x) => {
+      if (x.callTarget) {
+        return x.callTarget;
+      }
+      return x.delegateCallTarget;
     });
 };
 
@@ -148,4 +164,5 @@ module.exports = {
   getSignaturesFrombytes,
   decodeTraces,
   decodeTrace,
+  getUnknownAddressesFromTraces,
 };

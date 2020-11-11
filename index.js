@@ -5,17 +5,25 @@ const slash = require("express-slash");
 const bodyParser = require("body-parser");
 const abiDecoder = require("abi-decoder");
 const fs = require("fs");
+const morgan = require("morgan");
+
+// Example TX 0xbc82b1da4d912cf333ded5765858f390d6af43963bb9cd14ad293efb82129c33
 
 const {
   getUnknownSigBytesFromTraces,
   getSignaturesFrombytes,
   signatureToABI,
   decodeTraces,
+  getUnknownAddressesFromTraces,
 } = require("./src/helpers");
+
+const { getABIFromEtherscan } = require("./src/etherscan");
 
 // Our "database" - A JSON File. Don't over engineer lmao
 const ABI_DIR = path.resolve(".", "abis");
 const DB_PATH = path.resolve(ABI_DIR, "custom.json");
+
+const RETRIEVED_HISTORY = path.resolve(".", "retrieved.json");
 
 // Saves to custom data
 const saveCustomABIs = (abis) => {
@@ -29,7 +37,46 @@ const saveCustomABIs = (abis) => {
   fs.writeFileSync(DB_PATH, JSON.stringify([...existingABIs, ...abis]));
 };
 
-// TODO: Auto retrieve etherscan ABI
+const saveEtherscanABI = (address, abi) => {
+  fs.writeFileSync(
+    path.resolve(ABI_DIR, `${address}.json`),
+    JSON.stringify(abi)
+  );
+};
+
+const saveRetrieved = (addresses) => {
+  let existing = [];
+  try {
+    existing = JSON.parse(fs.readFileSync(RETRIEVED_HISTORY));
+  } catch (e) {
+    existing = {};
+  }
+
+  fs.writeFileSync(
+    RETRIEVED_HISTORY,
+    JSON.stringify({
+      ...existing,
+      ...addresses
+        .map((x) => {
+          return {
+            [x]: true,
+          };
+        })
+        .reduce((acc, x) => {
+          return { ...acc, ...x };
+        }, {}),
+    })
+  );
+};
+
+const hasRetrieved = (address) => {
+  try {
+    const existing = JSON.parse(fs.readFileSync(RETRIEVED_HISTORY));
+    return !!existing[address];
+  } catch (e) {
+    return false;
+  }
+};
 
 // Loads up all the saved ABIs
 for (const f of fs.readdirSync(ABI_DIR)) {
@@ -45,7 +92,7 @@ const router = express.Router({
 
 // Middlewares
 app.enable("strict routing");
-app.use(bodyParser.json()).use(router).use(slash());
+app.use(morgan("tiny")).use(bodyParser.json()).use(router).use(slash());
 
 router.get("/tx/:txHash/", async (req, res) => {
   const { txHash } = req.params;
@@ -102,9 +149,33 @@ router.get("/tx/:txHash/", async (req, res) => {
       // Add them to the abi encoder
       abiDecoder.addABI(abis);
 
-      // Save z custom ABI
+      // Save the custom ABI
       saveCustomABIs(abis);
     }
+  }
+
+  // If for whatever reason the data is not in 4bytes, try and get it from etherscan
+  const unknownAddresses = getUnknownAddressesFromTraces(
+    abiDecoder,
+    txResp.traces
+  ).filter((x) => !hasRetrieved(x));
+  if (unknownAddresses.length > 0) {
+    // Get all the abis
+    const abis = await Promise.all(
+      unknownAddresses.map((x) => getABIFromEtherscan(x))
+    );
+
+    // Add to abi decoder
+    for (const abi of abis) {
+      abiDecoder.addABI(abi);
+    }
+
+    // Save logged abis
+    for (let i = 0; i < abis.length; i++) {
+      saveEtherscanABI(unknownAddresses[i], abis[i]);
+    }
+
+    saveRetrieved(unknownAddresses);
   }
 
   // Decode traces
