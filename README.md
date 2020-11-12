@@ -8,7 +8,7 @@ Miao as in:
 
 喵 - Meow
 
-[![miao in action](https://thumbs.gfycat.com/DetailedRepentantCockroach-poster.jpg)](https://giant.gfycat.com/DetailedRepentantCockroach.webm)
+![img](https://raw.githubusercontent.com/kendricktan/miao/main/images/preview.gif)
 
 # Getting Started
 
