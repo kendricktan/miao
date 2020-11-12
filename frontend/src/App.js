@@ -303,7 +303,7 @@ function App() {
 
   const { addToast } = useToasts();
   const [fetching, setFetching] = useState(false);
-  const [traces, setTraces] = useState(require("./data.json"));
+  const [traces, setTraces] = useState(null);
   const [transactionHash, setTransactionHash] = useState("");
 
   const fetchTransactionHash = async () => {
