@@ -369,7 +369,7 @@ function App() {
         {!fetching && traces && (
           <TreeView
             className={treeClasses.root}
-            defaultExpanded={flattenTraces(traces).map((x, idx) => `${idx}`)}
+            defaultExpanded={flattenTraces(traces || []).map((x, idx) => `${idx}`)}
             defaultCollapseIcon={<MinusSquare />}
             defaultExpandIcon={<PlusSquare />}
             defaultEndIcon={<CloseSquare />}
