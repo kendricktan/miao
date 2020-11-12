@@ -14,7 +14,7 @@ services:
       - -c
       - |
           cd /ethtxd
-          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3002 -r https://nodes.mewapi.io/rpc/eth' --pure
+          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3002 -r http://127.0.0.1:8545' --pure
     ports:
       - "3002:3002"
     expose:
