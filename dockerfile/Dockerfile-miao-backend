@@ -1,0 +1,11 @@
+FROM node:15.1.0-alpine3.10
+
+COPY . /app
+
+WORKDIR /app
+
+RUN yarn
+
+EXPOSE 3001
+
+CMD ["yarn", "start"]

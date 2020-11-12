@@ -1,0 +1,17 @@
+FROM nixos/nix:2.3.6
+
+RUN nix-env -i git
+
+RUN git clone https://github.com/kendricktan/ethtxd.git /ethtxd
+
+RUN cd /ethtxd && git fetch && git reset --hard 5b76407512e9c5958f5b2607f20aee74bb15185a
+
+RUN cd /ethtxd && nix-shell shell-bin.nix
+
+RUN wget https://github.com/kendricktan/ethtxd/releases/download/v0.1.1/ethtxd-x86_64-linux -O /usr/bin/ethtxd
+
+RUN chmod +x /usr/bin/ethtxd
+
+EXPOSE 3000
+
+CMD [ "/bin/sh", "-c", "cd /ethtxd && nix-shell shell-bin.nix --run '/usr/bin/ethtxd -r https://nodes.mewapi.io/rpc/eth' --pure" ]

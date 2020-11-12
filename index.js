@@ -7,7 +7,13 @@ const abiDecoder = require("abi-decoder");
 const fs = require("fs");
 const morgan = require("morgan");
 
-// Example TX 0xbc82b1da4d912cf333ded5765858f390d6af43963bb9cd14ad293efb82129c33
+const PORT = process.env["PORT"] || 3001;
+let ETHTXD_URL = process.env["ETHTXD_URL"] || "http://localhost:3000/";
+
+// We want a trailing slash
+if (ETHTXD_URL[ETHTXD_URL.length - 1] !== "/") {
+  ETHTXD_URL = `${ETHTXD_URL}/`;
+}
 
 const {
   getUnknownSigBytesFromTraces,
@@ -94,6 +100,10 @@ const router = express.Router({
 app.enable("strict routing");
 app.use(morgan("tiny")).use(bodyParser.json()).use(router).use(slash());
 
+router.get("/", async (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 router.get("/tx/:txHash/", async (req, res) => {
   const { txHash } = req.params;
 
@@ -108,9 +118,7 @@ router.get("/tx/:txHash/", async (req, res) => {
   // Attempt to trace calls
   let txResp;
   try {
-    txResp = await fetch(`http://localhost:3000/tx/${txHash}`).then((x) =>
-      x.json()
-    );
+    txResp = await fetch(`${ETHTXD_URL}tx/${txHash}`).then((x) => x.json());
   } catch (e) {
     // ethtxd fails
     res.status(500).json({
@@ -184,6 +192,7 @@ router.get("/tx/:txHash/", async (req, res) => {
   res.json(decoded);
 });
 
-app.listen(5000, () => {
-  console.log("App listening at http://localhost:5000");
+app.listen(PORT, () => {
+  console.log(`Ethtxd URL: ${ETHTXD_URL}`);
+  console.log(`App listening at http://localhost:${PORT}`);
 });

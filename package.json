@@ -8,7 +8,6 @@
   "dependencies": {
     "abi-decoder": "^2.3.0",
     "body-parser": "^1.19.0",
-    "ethers": "^5.0.19",
     "express": "^4.17.1",
     "express-slash": "^2.0.1",
     "morgan": "^1.10.0",
