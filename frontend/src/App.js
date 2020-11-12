@@ -132,9 +132,8 @@ function tracesToTreeItem(startId, traces) {
             <TextareaAutosize
               rowsMax={5}
               style={{ width: "99%", marginTop: "5px", whiteSpace: "pre" }}
-            >
-              {label}
-            </TextareaAutosize>
+              value={label}
+            />
           }
         ></StyledTreeItem>
       );
@@ -167,9 +166,8 @@ function tracesToTreeItem(startId, traces) {
             <TextareaAutosize
               rowsMax={5}
               style={{ width: "99%", marginTop: "5px", whiteSpace: "pre" }}
-            >
-              {label}
-            </TextareaAutosize>
+              value={label}
+            />
           }
           onLabelClick={(e) => {
             e.preventDefault();
@@ -207,9 +205,8 @@ function tracesToTreeItem(startId, traces) {
             <TextareaAutosize
               rowsMax={5}
               style={{ width: "99%", marginTop: "5px", whiteSpace: "pre" }}
-            >
-              {label}
-            </TextareaAutosize>
+              value={label}
+            />
           }
           onLabelClick={(e) => {
             e.preventDefault();
@@ -229,9 +226,8 @@ function tracesToTreeItem(startId, traces) {
             <TextareaAutosize
               rowsMax={5}
               style={{ width: "99%", marginTop: "5px", whiteSpace: "pre" }}
-            >
-              {label}
-            </TextareaAutosize>
+              value={label}
+            />
           }
           onLabelClick={(e) => {
             e.preventDefault();
@@ -249,9 +245,8 @@ function tracesToTreeItem(startId, traces) {
             <TextareaAutosize
               rowsMax={5}
               style={{ width: "99%", marginTop: "5px", whiteSpace: "pre" }}
-            >
-              {label}
-            </TextareaAutosize>
+              value={label}
+            />
           }
           onLabelClick={(e) => {
             e.preventDefault();
@@ -289,9 +284,13 @@ const flattenTrace = (trace) => {
 };
 
 const flattenTraces = (traces) => {
-  return traces
-    .map((x) => flattenTrace(x))
-    .reduce((acc, x) => [...acc, ...x], []);
+  try {
+    return traces
+      .map((x) => flattenTrace(x))
+      .reduce((acc, x) => [...acc, ...x], []);
+  } catch (e) {
+    return [];
+  }
 };
 
 const prettyFunctionArgsDisplay = (args) => {
@@ -320,8 +319,15 @@ function App() {
         `${BACKEND_URL}tx/${transactionHash}`
       ).then((x) => x.json());
 
-      setTraces(resp);
-      addToast("Successfully traced transaction", { appearance: "success" });
+      if (resp.success) {
+        setTraces(resp.traces);
+        addToast("Successfully traced transaction", { appearance: "success" });
+      } else {
+        setTraces(null);
+        addToast("Failed to traced transaction, " + resp.message, {
+          appearance: "error",
+        });
+      }
     } catch (e) {
       setTraces(null);
       addToast(`An error occured: ${e.toString()}`, { appearance: "error" });
@@ -369,10 +375,13 @@ function App() {
         {!fetching && traces && (
           <TreeView
             className={treeClasses.root}
-            defaultExpanded={flattenTraces(traces || []).map((x, idx) => `${idx}`)}
+            defaultExpanded={flattenTraces(traces || []).map(
+              (x, idx) => `${idx}`
+            )}
             defaultCollapseIcon={<MinusSquare />}
             defaultExpandIcon={<PlusSquare />}
             defaultEndIcon={<CloseSquare />}
+            style={{ marginBottom: "25px" }}
           >
             {tracesToTreeItem(0, traces)}
           </TreeView>
