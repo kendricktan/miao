@@ -114,36 +114,40 @@ const getSignaturesFrombytes = async (bytes4) => {
 };
 
 const decodeTrace = (abiDecoder, trace) => {
-  if (trace.tag === "TxCall") {
-    const data = trace.callSigBytes + trace.callData.slice(2);
-    return {
-      ...trace,
-      callTrace: decodeTraces(abiDecoder, trace.callTrace),
-      decoded: abiDecoder.decodeMethod(data) || null,
-    };
-  }
+  try {
+    if (trace.tag === "TxCall") {
+      const data = trace.callSigBytes + trace.callData.slice(2);
+      return {
+        ...trace,
+        callTrace: decodeTraces(abiDecoder, trace.callTrace),
+        decoded: abiDecoder.decodeMethod(data) || null,
+      };
+    }
 
-  if (trace.tag === "TxDelegateCall") {
-    const data = trace.delegateCallSigBytes + trace.delegateCallData.slice(2);
-    return {
-      ...trace,
-      delegateCallTrace: decodeTraces(abiDecoder, trace.delegateCallTrace),
-      decoded: abiDecoder.decodeMethod(data) || null,
-    };
-  }
+    if (trace.tag === "TxDelegateCall") {
+      const data = trace.delegateCallSigBytes + trace.delegateCallData.slice(2);
+      return {
+        ...trace,
+        delegateCallTrace: decodeTraces(abiDecoder, trace.delegateCallTrace),
+        decoded: abiDecoder.decodeMethod(data) || null,
+      };
+    }
 
-  if (trace.tag === "TxEvent") {
-    const logs = [
-      {
-        data: trace.eventBytes,
-        topics: trace.eventTopics,
-      },
-    ];
+    if (trace.tag === "TxEvent") {
+      const logs = [
+        {
+          data: trace.eventBytes,
+          topics: trace.eventTopics,
+        },
+      ];
 
-    return {
-      ...trace,
-      decoded: (abiDecoder.decodeLogs(logs) || [])[0] || null,
-    };
+      return {
+        ...trace,
+        decoded: (abiDecoder.decodeLogs(logs) || [])[0] || null,
+      };
+    }
+  } catch (e) {
+    return trace;
   }
 
   // Otherwise is not a function signature

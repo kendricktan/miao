@@ -1,5 +1,5 @@
 {
-  "name": "miao",
+  "name": "miao-backend",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:kendricktan/miao.git",
@@ -8,6 +8,7 @@
   "dependencies": {
     "abi-decoder": "^2.3.0",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-slash": "^2.0.1",
     "morgan": "^1.10.0",

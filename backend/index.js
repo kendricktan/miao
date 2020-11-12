@@ -5,10 +5,11 @@ const slash = require("express-slash");
 const bodyParser = require("body-parser");
 const abiDecoder = require("abi-decoder");
 const fs = require("fs");
+const cors = require("cors");
 const morgan = require("morgan");
 
 const PORT = process.env["PORT"] || 3001;
-let ETHTXD_URL = process.env["ETHTXD_URL"] || "http://localhost:3000/";
+let ETHTXD_URL = process.env["ETHTXD_URL"] || "http://localhost:3002/";
 
 // We want a trailing slash
 if (ETHTXD_URL[ETHTXD_URL.length - 1] !== "/") {
@@ -97,6 +98,7 @@ const router = express.Router({
 });
 
 // Middlewares
+app.use(cors());
 app.enable("strict routing");
 app.use(morgan("tiny")).use(bodyParser.json()).use(router).use(slash());
 

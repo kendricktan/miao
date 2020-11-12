@@ -4,18 +4,20 @@ services:
     build:
       context: .
       dockerfile: dockerfile/Dockerfile-ethtxd
+    environment:
+      - MEW_RPC_URL=https://nodes.mewapi.io/rpc/eth
     entrypoint:
       - /bin/sh
       - -c
       - |
           cd /ethtxd
-          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3000 -r https://nodes.mewapi.io/rpc/eth' --pure
+          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3002 -r http://192.168.1.108:8544' --pure
     ports:
-      - "3000:3000"
+      - "3002:3002"
     expose:
-      - "3000"
+      - "3002"
     healthcheck:
-      test: curl localhost:3000
+      test: curl localhost:3002
       interval: 5s
       timeout: 3s
       retries: 5
@@ -26,7 +28,7 @@ services:
       dockerfile: dockerfile/Dockerfile-miao-backend
     environment:
       - PORT=3001
-      - ETHTXD_URL=http://ethtxd:3000
+      - ETHTXD_URL=http://ethtxd:3002
     entrypoint:
       - /bin/sh
       - -c
