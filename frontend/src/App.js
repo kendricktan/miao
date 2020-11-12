@@ -156,7 +156,9 @@ function tracesToTreeItem(startId, traces) {
           })}`
         );
 
-        label = `call::${trace.callTarget}\n${trace.decoded.name}(\n\t${func}\n)`;
+        const paddedFunc = func.length > 0 ? `\n\t${func}\n` : "";
+
+        label = `call::${trace.callTarget}\n${trace.decoded.name}(${paddedFunc})`;
       }
 
       return (
@@ -195,7 +197,9 @@ function tracesToTreeItem(startId, traces) {
           })}`
         );
 
-        label = `delegateCall::${trace.delegateCallTarget}\n${trace.decoded.name}(\n\t${func}\n)`;
+        const paddedFunc = func.length > 0 ? `\n\t${func}\n` : "";
+
+        label = `delegateCall::${trace.delegateCallTarget}\n${trace.decoded.name}(${paddedFunc})`;
       }
 
       return (

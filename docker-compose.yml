@@ -1,22 +1,39 @@
 version: "3"
 services:
-  ethtxd:
-    build:
-      context: .
-      dockerfile: dockerfile/Dockerfile-ethtxd
+  ganache:
+    image: trufflesuite/ganache-cli
     environment:
       - MEW_RPC_URL=https://nodes.mewapi.io/rpc/eth
       - BLOCK_SCOUT_RPC_URL=https://mainnet-nethermind.blockscout.com/
       - MY_CRYPTO_RPC_URL=https://api.mycryptoapi.com/eth
       - CLOUDFLARE_RPC_URL=https://cloudflare-eth.com/
-      - PERSONAL_NODE=http://192.168.1.108:8544
-      - LOCALHOST_NODE=http://192.168.1.106:8545
+      - LOCALHOST_NODE=http://192.168.1.108:8544
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+          node /app/ganache-core.docker.cli.js -f $${CLOUDFLARE_RPC_URL} -p 8545 -d
+    ports:
+      - "8545:8545"
+    expose:
+      - "8545"
+    healthcheck:
+      test: |
+        curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_gasPrice","params":[],"id":1}' http://localhost:8545
+      interval: 30s
+      timeout: 3s
+      retries: 5
+
+  ethtxd:
+    build:
+      context: .
+      dockerfile: dockerfile/Dockerfile-ethtxd
     entrypoint:
       - /bin/sh
       - -c
       - |
           cd /ethtxd
-          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3002 -r https://nodes.mewapi.io/rpc/eth' --pure
+          nix-shell shell-bin.nix --run '/usr/bin/ethtxd -p 3002 -r http://ganache:8545' --pure
     ports:
       - "3002:3002"
     expose:
@@ -26,6 +43,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    depends_on:
+      - ganache
 
   miao-backend:
     build:
