@@ -13,15 +13,5 @@ Making sense of ethereum transactions.
 docker-compose build
 docker-compose up
 
-# Against local ganache-cli forked from mainnet
-docker-compose -f docker-compose-localhost.yml build
-docker-compose -f docker-compose-localhost.yml up
-
 # Visit localhost:3000 in your browser
-```
-
-# Development
-
-```bash
-yarn dev
 ```

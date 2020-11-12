@@ -191,7 +191,7 @@ router.get("/tx/:txHash/", async (req, res) => {
   // Decode traces
   const decoded = decodeTraces(abiDecoder, txResp.traces);
 
-  res.json(decoded);
+  res.json({ success: true, traces: decoded });
 });
 
 app.listen(PORT, () => {

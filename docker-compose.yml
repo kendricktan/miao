@@ -9,6 +9,8 @@ services:
       - BLOCK_SCOUT_RPC_URL=https://mainnet-nethermind.blockscout.com/
       - MY_CRYPTO_RPC_URL=https://api.mycryptoapi.com/eth
       - CLOUDFLARE_RPC_URL=https://cloudflare-eth.com/
+      - PERSONAL_NODE=http://192.168.1.108:8544
+      - LOCALHOST_NODE=http://192.168.1.106:8545
     entrypoint:
       - /bin/sh
       - -c
@@ -55,13 +57,13 @@ services:
       context: .
       dockerfile: dockerfile/Dockerfile-miao-frontend
     environment:
-      - BACKEND_URL=http://miao-backend:3001
+      - BACKEND_URL=http://localhost:3001
     entrypoint:
       - /bin/sh
       - -c
       - |
           cd /app
-          yarn start
+          yarn serve
     ports:
       - "3000:3000"
     expose:
