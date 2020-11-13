@@ -24,13 +24,14 @@ const {
   getUnknownAddressesFromTraces,
 } = require("./src/helpers");
 
-const { getABIFromEtherscan } = require("./src/etherscan");
+const { getSourceCodeFromEtherscan } = require("./src/etherscan");
 
 // Our "database" - A JSON File. Don't over engineer lmao
 const ABI_DIR = path.resolve(".", "abis");
 const DB_PATH = path.resolve(ABI_DIR, "custom.json");
 
 const RETRIEVED_HISTORY = path.resolve(".", "retrieved.json");
+const CONTRACT_NAMES = path.resolve(".", "contract-names.json");
 
 // Saves to custom data
 const saveCustomABIs = (abis) => {
@@ -73,6 +74,20 @@ const saveRetrieved = (addresses) => {
           return { ...acc, ...x };
         }, {}),
     })
+  );
+};
+
+const saveContractNames = (contractNames) => {
+  let existing = [];
+  try {
+    existing = JSON.parse(fs.readFileSync(CONTRACT_NAMES));
+  } catch (e) {
+    existing = {};
+  }
+
+  fs.writeFileSync(
+    CONTRACT_NAMES,
+    JSON.stringify({ ...existing, ...contractNames })
   );
 };
 
@@ -139,7 +154,51 @@ router.get("/tx/:txHash/", async (req, res) => {
     return;
   }
 
-  // Get unknown signature bytes
+  // Get data from etherscan
+  const unknownAddresses = getUnknownAddressesFromTraces(
+    abiDecoder,
+    txResp.traces
+  ).filter((x) => !hasRetrieved(x));
+  if (unknownAddresses.length > 0) {
+    // Get all the abis
+    const sourceCodes = await Promise.all(
+      unknownAddresses.map((x) => getSourceCodeFromEtherscan(x))
+    );
+
+    const abis = sourceCodes.map((x) => x.ABI).filter((x) => !!x);
+
+    // Extract out contract names
+    const contractNames = sourceCodes
+      .map(({ ContractName }, idx) => {
+        if (ContractName) {
+          return { [unknownAddresses[idx].toLowerCase()]: ContractName };
+        }
+        return {};
+      })
+      .reduce((acc, x) => {
+        return { ...acc, ...x };
+      }, {});
+
+    // Add to abi decoder
+    for (const abi of abis) {
+      abiDecoder.addABI(abi);
+    }
+
+    // Save logged abis
+    for (let i = 0; i < abis.length; i++) {
+      if (abis[i].length > 0) {
+        saveEtherscanABI(unknownAddresses[i], abis[i]);
+      }
+    }
+
+    // Saved retrieved addresses
+    saveRetrieved(unknownAddresses);
+
+    // Save Contract names
+    saveContractNames(contractNames);
+  }
+
+  // If its not known on etherscan, get unknown signature bytes from 4bytes
   const unknownSigBytes = getUnknownSigBytesFromTraces(
     abiDecoder,
     txResp.traces
@@ -164,32 +223,15 @@ router.get("/tx/:txHash/", async (req, res) => {
     }
   }
 
-  // If for whatever reason the data is not in 4bytes, try and get it from etherscan
-  const unknownAddresses = getUnknownAddressesFromTraces(
-    abiDecoder,
-    txResp.traces
-  ).filter((x) => !hasRetrieved(x));
-  if (unknownAddresses.length > 0) {
-    // Get all the abis
-    const abis = await Promise.all(
-      unknownAddresses.map((x) => getABIFromEtherscan(x))
-    );
+  // Read contract names
+  let contractNames = {};
 
-    // Add to abi decoder
-    for (const abi of abis) {
-      abiDecoder.addABI(abi);
-    }
-
-    // Save logged abis
-    for (let i = 0; i < abis.length; i++) {
-      saveEtherscanABI(unknownAddresses[i], abis[i]);
-    }
-
-    saveRetrieved(unknownAddresses);
+  if (fs.existsSync(CONTRACT_NAMES)) {
+    contractNames = JSON.parse(fs.readFileSync(CONTRACT_NAMES));
   }
 
   // Decode traces
-  const decoded = decodeTraces(abiDecoder, txResp.traces);
+  const decoded = decodeTraces(contractNames, abiDecoder, txResp.traces);
 
   res.json({ success: true, traces: decoded });
 });

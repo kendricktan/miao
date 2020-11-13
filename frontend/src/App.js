@@ -140,7 +140,12 @@ function tracesToTreeItem(startId, traces) {
     }
 
     if (trace.tag === "TxCall") {
-      let label = `call:${trace.callTarget}::${trace.callSigBytes}(${trace.callData})`;
+      let contractTarget = `${trace.callTarget}`
+      if (trace.contractName) {
+        contractTarget = `${trace.contractName}<${trace.callTarget}>`
+      }
+
+      let label = `call:${contractTarget}\n${trace.callSigBytes}(${trace.callData})`;
 
       if (trace.decoded) {
         const func = prettyFunctionArgsDisplay(
@@ -158,7 +163,7 @@ function tracesToTreeItem(startId, traces) {
 
         const paddedFunc = func.length > 0 ? `\n\t${func}\n` : "";
 
-        label = `call::${trace.callTarget}\n${trace.decoded.name}(${paddedFunc})`;
+        label = `call::${contractTarget}\n${trace.decoded.name}(${paddedFunc})`;
       }
 
       return (
@@ -181,7 +186,12 @@ function tracesToTreeItem(startId, traces) {
     }
 
     if (trace.tag === "TxDelegateCall") {
-      let label = `delegateCall::${trace.delegateCallTarget}\n${trace.delegateCallSigBytes}(${trace.delegateCallData})`;
+      let contractTarget = `${trace.delegateCallTarget}`
+      if (trace.contractName) {
+        contractTarget = `${trace.contractName}<${trace.delegateCallTarget}>`
+      }
+
+      let label = `delegateCall::${contractTarget}\n${trace.delegateCallSigBytes}(${trace.delegateCallData})`;
 
       if (trace.decoded) {
         const func = prettyFunctionArgsDisplay(
@@ -199,7 +209,7 @@ function tracesToTreeItem(startId, traces) {
 
         const paddedFunc = func.length > 0 ? `\n\t${func}\n` : "";
 
-        label = `delegateCall::${trace.delegateCallTarget}\n${trace.decoded.name}(${paddedFunc})`;
+        label = `delegateCall::${contractTarget}\n${trace.decoded.name}(${paddedFunc})`;
       }
 
       return (

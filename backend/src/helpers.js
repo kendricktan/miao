@@ -113,13 +113,14 @@ const getSignaturesFrombytes = async (bytes4) => {
   }
 };
 
-const decodeTrace = (abiDecoder, trace) => {
+const decodeTrace = (contractNames, abiDecoder, trace) => {
   try {
     if (trace.tag === "TxCall") {
       const data = trace.callSigBytes + trace.callData.slice(2);
       return {
         ...trace,
-        callTrace: decodeTraces(abiDecoder, trace.callTrace),
+        contractName: contractNames[trace.callTarget.toLowerCase()] || null,
+        callTrace: decodeTraces(contractNames, abiDecoder, trace.callTrace),
         decoded: abiDecoder.decodeMethod(data) || null,
       };
     }
@@ -128,7 +129,8 @@ const decodeTrace = (abiDecoder, trace) => {
       const data = trace.delegateCallSigBytes + trace.delegateCallData.slice(2);
       return {
         ...trace,
-        delegateCallTrace: decodeTraces(abiDecoder, trace.delegateCallTrace),
+        contractName: contractNames[trace.delegateCallTarget.toLowerCase()] || null,
+        delegateCallTrace: decodeTraces(contractNames, abiDecoder, trace.delegateCallTrace),
         decoded: abiDecoder.decodeMethod(data) || null,
       };
     }
@@ -155,8 +157,8 @@ const decodeTrace = (abiDecoder, trace) => {
   return trace;
 };
 
-const decodeTraces = (abiDecoder, traces) => {
-  return traces.map((x) => decodeTrace(abiDecoder, x));
+const decodeTraces = (contractNames, abiDecoder, traces) => {
+  return traces.map((x) => decodeTrace(contractNames, abiDecoder, x));
 };
 
 module.exports = {

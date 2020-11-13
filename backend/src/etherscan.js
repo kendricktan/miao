@@ -16,6 +16,24 @@ const getABIFromEtherscan = async (address) => {
   }
 };
 
+const getSourceCodeFromEtherscan = async (address) => {
+  try {
+    const resp = await fetch(
+      `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${ETHERSCAN_API_KEY}`
+    ).then((x) => x.json());
+
+    const { ABI, ContractName } = resp.result[0];
+
+    return {
+      ABI: JSON.parse(ABI),
+      ContractName,
+    };
+  } catch (e) {
+    return [];
+  }
+};
+
 module.exports = {
   getABIFromEtherscan,
+  getSourceCodeFromEtherscan,
 };
