@@ -7,12 +7,11 @@ services:
       - BLOCK_SCOUT_RPC_URL=https://mainnet-nethermind.blockscout.com/
       - MY_CRYPTO_RPC_URL=https://api.mycryptoapi.com/eth
       - CLOUDFLARE_RPC_URL=https://cloudflare-eth.com/
-      - LOCALHOST_NODE=http://192.168.1.108:8544
     entrypoint:
       - /bin/sh
       - -c
       - |
-          node /app/ganache-core.docker.cli.js -f $${LOCALHOST_NODE} -p 8545 -d
+          node /app/ganache-core.docker.cli.js -f $${CLOUDFLARE_RPC_URL} -p 8545 -d
     ports:
       - "8545:8545"
     expose:
