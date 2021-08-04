@@ -11,7 +11,7 @@ services:
       - /bin/sh
       - -c
       - |
-          node /app/ganache-core.docker.cli.js -f $${CLOUDFLARE_RPC_URL} -p 8545 -d
+              node /app/ganache-core.docker.cli.js -f http://192.168.1.100:8544 -p 8545 -d
     ports:
       - "8545:8545"
     expose:

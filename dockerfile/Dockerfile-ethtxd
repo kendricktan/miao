@@ -4,11 +4,11 @@ RUN nix-env -i git
 
 RUN git clone https://github.com/kendricktan/ethtxd.git /ethtxd
 
-RUN cd /ethtxd && git fetch && git reset --hard 5b76407512e9c5958f5b2607f20aee74bb15185a
+RUN cd /ethtxd && git fetch && git reset --hard a6dfe0d8a6bbb997d9068df237f5c70ecc72fce7
 
 RUN cd /ethtxd && nix-shell shell-bin.nix
 
-RUN wget https://github.com/kendricktan/ethtxd/releases/download/v0.1.1/ethtxd-x86_64-linux -O /usr/bin/ethtxd
+RUN wget https://github.com/kendricktan/ethtxd/releases/download/v0.1.2/ethtxd-x86_64-linux -O /usr/bin/ethtxd
 
 RUN chmod +x /usr/bin/ethtxd
 
